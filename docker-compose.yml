@@ -1,13 +1,12 @@
-# For more information: https://laravel.com/docs/sail
 version: '3'
 services:
-    laravel.test:
+    app:
         build:
-            context: ./vendor/laravel/sail/runtimes/8.1
-            dockerfile: Dockerfile
+            context: ./
+            dockerfile: ./docker/php/Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: sail-8.1/app
+        image: talos/app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -20,94 +19,103 @@ services:
         volumes:
             - '.:/var/www/html'
         networks:
-            - sail
+            - talos
         depends_on:
-            - pgsql
+            - db
             - redis
             - meilisearch
             - minio
             - selenium
-    pgsql:
+
+    db:
         image: 'postgres:14'
         ports:
             - '${FORWARD_DB_PORT:-5432}:5432'
         environment:
-            PGPASSWORD: '${DB_PASSWORD:-secret}'
+            PGPASSWORD: '${DB_PASSWORD}'
             POSTGRES_DB: '${DB_DATABASE}'
             POSTGRES_USER: '${DB_USERNAME}'
-            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD}'
         volumes:
-            - 'sail-pgsql:/var/lib/postgresql/data'
+            - 'db-data:/var/lib/postgresql/data'
             - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
-            - sail
+            - talos
         healthcheck:
             test: ["CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}"]
             retries: 3
             timeout: 5s
+
     redis:
-        image: 'redis:alpine'
+        image: 'redis:7'
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
         volumes:
-            - 'sail-redis:/data'
+            - 'redis-data:/data'
         networks:
-            - sail
+            - talos
         healthcheck:
             test: ["CMD", "redis-cli", "ping"]
             retries: 3
             timeout: 5s
+
     meilisearch:
-        image: 'getmeili/meilisearch:latest'
+        image: 'getmeili/meilisearch:v0.26.1'
         ports:
             - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
         volumes:
-            - 'sail-meilisearch:/data.ms'
+            - 'meilisearch-data:/data.ms'
         networks:
-            - sail
+            - talos
         healthcheck:
             test: ["CMD", "wget", "--no-verbose", "--spider",  "http://localhost:7700/health"]
             retries: 3
             timeout: 5s
+
     minio:
         image: 'minio/minio:latest'
         ports:
             - '${FORWARD_MINIO_PORT:-9000}:9000'
             - '${FORWARD_MINIO_CONSOLE_PORT:-8900}:8900'
         environment:
-            MINIO_ROOT_USER: 'sail'
-            MINIO_ROOT_PASSWORD: 'password'
+            MINIO_ROOT_USER: '${MINIO_ROOT_USER}'
+            MINIO_ROOT_PASSWORD: '${MINIO_ROOT_PASSWORD}'
         volumes:
-            - 'sail-minio:/data/minio'
+            - 'minio-data:/data/minio'
         networks:
-            - sail
+            - talos
         command: minio server /data/minio --console-address ":8900"
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
             retries: 3
             timeout: 5s
+
     selenium:
-        image: 'selenium/standalone-chrome'
+        image: 'selenium/standalone-chrome:101.0'
         volumes:
             - '/dev/shm:/dev/shm'
         networks:
-            - sail
+            - talos
+
+
     mailhog:
-        image: 'mailhog/mailhog:latest'
+        image: 'mailhog/mailhog:v1.0.1'
         ports:
             - '${FORWARD_MAILHOG_PORT:-1025}:1025'
             - '${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025'
         networks:
-            - sail
+            - talos
+
 networks:
-    sail:
+    talos:
         driver: bridge
+
 volumes:
-    sail-pgsql:
+    db-data:
         driver: local
-    sail-redis:
+    redis-data:
         driver: local
-    sail-meilisearch:
+    meilisearch-data:
         driver: local
-    sail-minio:
+    minio-data:
         driver: local
