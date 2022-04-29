@@ -1,61 +1,56 @@
-FROM ubuntu:21.10
+FROM php:8.1-fpm
 
-LABEL maintainer="bennyharvey"
+# Copy composer.lock and composer.json
+COPY composer.lock composer.json /var/www/
 
-ARG WWWGROUP
-ARG NODE_VERSION=16
-ARG POSTGRES_VERSION=14
+# Set working directory
+WORKDIR /var/www
 
-WORKDIR /var/www/html
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libzip-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV TZ=UTC
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# Install extensions
+RUN docker-php-ext-install zip exif pcntl
+# RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
+RUN docker-php-ext-install gd
+
 
 RUN apt-get update \
-    && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python2 \
-    && mkdir -p ~/.gnupg \
-    && chmod 600 ~/.gnupg \
-    && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf \
-    && apt-key adv --homedir ~/.gnupg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x14AA40EC0831756756D7F66C4F4EA0AAE5267A6C \
-    && echo "deb https://ppa.launchpadcontent.net/ondrej/php/ubuntu impish main" > /etc/apt/sources.list.d/ppa_ondrej_php.list \
-    && apt-get update \
-    && apt-get install -y php8.1-cli php8.1-dev \
-       php8.1-pgsql php8.1-sqlite3 php8.1-gd \
-       php8.1-curl \
-       php8.1-imap php8.1-mysql php8.1-mbstring \
-       php8.1-xml php8.1-zip php8.1-bcmath php8.1-soap \
-       php8.1-intl php8.1-readline \
-       php8.1-ldap \
-       php8.1-msgpack php8.1-igbinary php8.1-redis php8.1-swoole \
-       php8.1-memcached php8.1-pcov php8.1-xdebug \
-    && php -r "readfile('https://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
-    && curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g npm \
-    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt impish-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
-    && curl --silent -o - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-    && apt-get update \
-    && apt-get install -y yarn \
-    && apt-get install -y mysql-client \
-    && apt-get install -y postgresql-client \
-    && apt-get -y autoremove \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && apt-get install -y libpq-dev \
+    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install pdo pdo_pgsql pgsql
 
-RUN setcap "cap_net_bind_service=+ep" /usr/bin/php8.1
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN groupadd --force -g $WWWGROUP sail
-RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
+# Add user for application
+RUN groupadd -g 1000 www
+RUN useradd -u 1000 -ms /bin/bash -g www www
 
-COPY ./docker/php/start-container /usr/local/bin/start-container
-COPY ./docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY ./docker/php/php.ini /etc/php/8.1/cli/conf.d/99-sail.ini
-RUN chmod +x /usr/local/bin/start-container
+# Copy existing application directory contents
+COPY . /var/www/talos
 
-EXPOSE 8000
+# Copy existing application directory permissions
+COPY --chown=www:www . /var/www/talos
 
-ENTRYPOINT ["start-container"]
+# Change current user to www
+USER www
+
+# Expose port 9000 and start php-fpm server
+EXPOSE 9000
+CMD ["php-fpm"]
