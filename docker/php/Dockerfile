@@ -1,10 +1,12 @@
 FROM php:8.1-fpm
 
+ARG NODE_VERSION=16
+
 # Copy composer.lock and composer.json
 COPY composer.lock composer.json /var/www/
 
 # Set working directory
-WORKDIR /var/www
+WORKDIR /var/www/talos
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -20,6 +22,15 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl
+
+RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm \
+    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+    && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
+    && apt-get update \
+    && apt-get install -y yarn \
+    && apt-get -y autoremove
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BaseStationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
+Route::get('/', static function () {
     return view('welcome');
 });
+
+Route::get('/greeting', static function () {
+    return 'hey';
+});
+
+Route::get('/bs/{id}', [BaseStationController::class, 'show'])->name('bs');
