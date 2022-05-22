@@ -1,18 +1,29 @@
 <template>
+    <el-container class="input-size-default">
+<!--        <el-input v-model="input" placeholder="Please input" clearable />-->
+    </el-container>
     <p>Base Station #{{ baseStation }}</p>
-    <a href={{nextPage}}>{{nextPage}}</a>
     <button @click="increment">Count is: {{ count }}</button>
+    <el-row class="mb-4">
+        <Button text="text"/>
+    </el-row>
+    <Link :href="$route('bs.info', baseStation + 1)">Next base station</Link>
 </template>
 <script>
-import { Head } from '@inertiajs/inertia-vue3'
-
+import { Head, Link } from '@inertiajs/inertia-vue3'
+import Layout from '../../Shared/Layout'
+import { ref } from 'vue'
+import Button from '../../Shared/Basic/Button'
+const input = ref('')
 export default {
+    layout: Layout,
     components: {
         Head,
+        Link,
+        Button
     },
     props: {
         baseStation: Number,
-        nextPage: String,
     },
     // Properties returned from data() becomes reactive state
     // and will be exposed on `this`.
@@ -38,3 +49,10 @@ export default {
     }
 }
 </script>
+
+<style>
+
+.input-size-default{
+    width: 300px;
+}
+</style>

@@ -15,11 +15,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', static function () {
-    return view('welcome');
+    return 'welcome';
 });
 
 Route::get('/greeting', static function () {
     return 'hey';
 });
 
-Route::get('/bs/{id}', [BaseStationController::class, 'show'])->name('bs');
+Route::get('/bs/{id}', [BaseStationController::class, 'show'])->name('bs.info');
+Route::get('/bs', [BaseStationController::class, 'list'])->name('bs.list');
