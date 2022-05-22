@@ -10,16 +10,25 @@ use Inertia\Response;
 class BaseStationController extends Controller
 {
     /**
-     * BS page
+     * BS info page
      *
      * @param  int  $id
      * @return Response
      */
-    public function show(mixed $id): Response
+    public function show(int $id): Response
     {
         return Inertia::render('Base/Info', [
             'baseStation' => $id,
-            'nextPage' => URL::route('bs',  ['id' => (int)$id + 1]),
         ]);
+    }
+
+    /**
+     * BS list page
+     *
+     * @return Response
+     */
+    public function list(): Response
+    {
+        return Inertia::render('Base/List');
     }
 }

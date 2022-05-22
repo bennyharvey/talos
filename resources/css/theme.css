@@ -1,0 +1,28 @@
+html {
+    --tl-border-radius-base: 10px;
+    --el-menu-item-height: 43px;
+}
+a {
+    text-decoration: none;
+    color: var(--el-menu-text-color);
+}
+.it-toggle {
+    background-color: var(--el-color-info-light-7);
+    border: solid 3px var(--el-color-info-light-5);
+    cursor: pointer;
+}
+.it-toggle:focus {
+    box-shadow: none;
+}
+.it-toggle-slider {
+    background: var(--el-color-info-light-9);
+}
+.el-menu-item.is-active {
+    background-color: var(--el-color-primary-light-5);
+
+}
+.el-menu-item {
+    /*margin: 8px;*/
+    /*border-radius: var(--tl-border-radius-base);*/
+}
+

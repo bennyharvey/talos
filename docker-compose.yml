@@ -49,7 +49,6 @@ services:
             POSTGRES_PASSWORD: '${DB_PASSWORD}'
         volumes:
             - 'db-data:/var/lib/postgresql/data'
-            - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
             - talos
         healthcheck:
