@@ -58,7 +58,7 @@ export default {
         </el-header>
         <el-container>
             <el-menu
-                default-active="2"
+                default-active="4"
                 class="tl-menu-vertical"
                 :collapse="true"
             >
