@@ -1,32 +1,20 @@
-<script>
+<script setup>
 import {Link} from '@inertiajs/inertia-vue3'
 import { Menu as IconMenu, Message, Setting } from '@element-plus/icons-vue'
 import { useDark, useToggle } from '@vueuse/core'
-// const toggleDark = useToggle(isDark)
+import {onMounted, ref} from "vue";
 
-export default {
-    components: {
-        Link,
-        IconMenu,
-        Message,
-        Setting
-    },
-    data() {
-        return {
-            isDark: useDark(),
-            darkMode: String
-        }
-    },
-    methods: {
-        toggleDark() {
-            this.isDark = !(this.isDark)
-            this.darkMode = this.isDark ? "bedtime" : "wb_sunny"
-        },
-    },
-    mounted() {
-        this.darkMode = this.isDark ? "bedtime" : "wb_sunny"
-    }
+const isDark = ref(useDark())
+const darkMode = ref()
+
+function toggleDark() {
+    isDark.value = !(isDark.value)
+    darkMode.value = isDark.value ? "bedtime" : "wb_sunny"
 }
+
+onMounted(() => {
+    darkMode.value = isDark.value ? "bedtime" : "wb_sunny"
+})
 </script>
 
 <template>
