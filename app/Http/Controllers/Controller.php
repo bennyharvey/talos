@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Factories\BaseStationFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -12,10 +13,7 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    protected EntityManagerInterface $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
+    public function __construct(
+        protected EntityManagerInterface $em,
+    ){}
 }

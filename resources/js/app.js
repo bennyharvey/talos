@@ -16,7 +16,7 @@ import '../css/theme.css'
 InertiaProgress.init()
 
 createInertiaApp({
-    resolve: name =>{
+    resolve: name => {
         const page = require(`./Pages/${name}`).default
         if (page.layout === undefined && !name.startsWith('Public/')) {
             page.layout = Layout

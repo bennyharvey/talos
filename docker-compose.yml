@@ -7,6 +7,7 @@ services:
             args:
                 WWWGROUP: '${WWWGROUP:-www}'
         image: talos/app
+        restart: unless-stopped
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         environment:
@@ -40,6 +41,7 @@ services:
 
     db:
         image: postgres:14
+        restart: unless-stopped
         ports:
             - '${FORWARD_DB_PORT:-5432}:5432'
         environment:
@@ -58,6 +60,7 @@ services:
 
     redis:
         image: redis:7
+        restart: unless-stopped
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
         volumes:
@@ -71,6 +74,7 @@ services:
 
     meilisearch:
         image: getmeili/meilisearch:v0.26.1
+        restart: unless-stopped
         ports:
             - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
         volumes:
@@ -84,6 +88,7 @@ services:
 
     minio:
         image: minio/minio:latest
+        restart: unless-stopped
         ports:
             - '${FORWARD_MINIO_PORT:-9000}:9000'
             - '${FORWARD_MINIO_CONSOLE_PORT:-8900}:8900'
@@ -102,6 +107,7 @@ services:
 
     selenium:
         image: selenium/standalone-chrome:101.0
+        restart: unless-stopped
         volumes:
             - '/dev/shm:/dev/shm'
         networks:
@@ -110,6 +116,7 @@ services:
 
     mailhog:
         image: mailhog/mailhog:v1.0.1
+        restart: unless-stopped
         ports:
             - '${FORWARD_MAILHOG_PORT:-1025}:1025'
             - '${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025'
