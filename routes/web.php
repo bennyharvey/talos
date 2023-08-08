@@ -22,5 +22,7 @@ Route::get('/greeting', static function () {
     return 'hey';
 });
 
+Route::get('test', [BaseStationController::class, 'test']);
+
 Route::get('/bs/{id}', [BaseStationController::class, 'show'])->name('bs.info');
 Route::get('/bs', [BaseStationController::class, 'list'])->name('bs.list');
